@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { NavLink } from "react-router-dom";
 import { useLocation, useParams } from "react-router-dom";
 import styled from "styled-components";
+import { fetchCoinInfo, fetchCoinTickers } from "../api";
 
 interface InfoData {
   id: string;
@@ -58,30 +60,70 @@ interface PriceData {
 }
 
 function Coin() {
-  const [loading, setLoading] = useState(true);
   const { coinId } = useParams() as { coinId: string };
   const { state } = useLocation();
-  const [info, setInfo] = useState<InfoData>();
-  const [price, setPrice] = useState<PriceData>();
-  useEffect(() => {
-    (async () => {
-      const infoData = await (
-        await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-      ).json();
-      const priceData = await (
-        await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
-      ).json();
-      setInfo(infoData);
-      setPrice(priceData);
-    })();
-  }, []);
+  const { isLoading: infoLoading, data: infoData } = useQuery<InfoData>({
+    queryKey: ["info", coinId],
+    queryFn: () => fetchCoinInfo(coinId),
+  });
+  const { isLoading: tickersLoading, data: tickersData } = useQuery<PriceData>({
+    queryKey: ["ticker", coinId],
+    queryFn: () => fetchCoinTickers(coinId),
+  });
+  const loading = infoLoading || tickersLoading;
 
   return (
     <Container>
       <Header>
-        <Title>{state?.name || "Loading..."}</Title>
+        <Title>
+          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+        </Title>
       </Header>
-      {loading ? <Loader>Loading...</Loader> : <span>{}</span>}
+      {loading ? (
+        <Loader>Loading...</Loader>
+      ) : (
+        <>
+          <Overview>
+            <OverviewItem>
+              <span>Rank:</span>
+              <span>{infoData?.rank}</span>
+            </OverviewItem>
+            <OverviewItem>
+              <span>Symbol:</span>
+              <span>${infoData?.symbol}</span>
+            </OverviewItem>
+            <OverviewItem>
+              <span>Open Source:</span>
+              <span>{infoData?.open_source ? "Yes" : "No"}</span>
+            </OverviewItem>
+          </Overview>
+          <Description>{infoData?.description}</Description>
+          <Overview>
+            <OverviewItem>
+              <span>Total Suply:</span>
+              <span>{tickersData?.total_supply}</span>
+            </OverviewItem>
+            <OverviewItem>
+              <span>Max Supply:</span>
+              <span>{tickersData?.max_supply}</span>
+            </OverviewItem>
+          </Overview>
+          <Tabs>
+            <Tab
+              to={`/${coinId}/chart`}
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
+              Chart
+            </Tab>
+            <Tab
+              to={`/${coinId}/price`}
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
+              Price
+            </Tab>
+          </Tabs>
+        </>
+      )}
     </Container>
   );
 }
@@ -100,9 +142,61 @@ const Header = styled.header`
 `;
 
 const Title = styled.h1`
-  font-size: 48px;
+  font-size: 3rem;
   font-weight: 700;
   color: ${(props) => props.theme.accentColor};
+`;
+
+const Overview = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+
+const OverviewItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1rem;
+  span:first-child {
+    margin-bottom: 5px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+`;
+
+const Description = styled.p`
+  margin: 20px 0px;
+`;
+
+const Tabs = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 25px 0px;
+  gap: 10px;
+`;
+
+const Tab = styled(NavLink)`
+  padding: 7px 0px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-size: 1rem;
+  font-weight: 400;
+  color: ${(props) => props.theme.textColor};
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotateX(0deg);
+  &.active {
+    color: ${(props) => props.theme.accentColor};
+    transform: rotateX(360deg);
+    transition: all 0.5s;
+  }
+  a {
+    display: block;
+  }
 `;
 
 const Loader = styled.p`
