@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { fetchCoins } from "../api";
+import { Helmet } from "react-helmet-async";
 
 interface ICoin {
   id: string;
@@ -21,6 +22,9 @@ function Coins() {
 
   return (
     <Container>
+      <Helmet>
+        <title>Coin</title>
+      </Helmet>
       <Header>
         <Title>Coin</Title>
       </Header>

@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { NavLink } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useLocation, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { fetchCoinInfo, fetchCoinTickers } from "../api";
+import { Helmet } from "react-helmet-async";
+import { IoChevronBack } from "react-icons/io5";
 
 interface InfoData {
   id: string;
@@ -62,6 +64,7 @@ interface PriceData {
 function Coin() {
   const { coinId } = useParams() as { coinId: string };
   const { state } = useLocation();
+  const navigate = useNavigate();
   const { isLoading: infoLoading, data: infoData } = useQuery<InfoData>({
     queryKey: ["info", coinId],
     queryFn: () => fetchCoinInfo(coinId),
@@ -69,12 +72,24 @@ function Coin() {
   const { isLoading: tickersLoading, data: tickersData } = useQuery<PriceData>({
     queryKey: ["ticker", coinId],
     queryFn: () => fetchCoinTickers(coinId),
+    staleTime: 5 * 1000,
   });
+  const handleGoBack = () => {
+    navigate("/");
+  };
   const loading = infoLoading || tickersLoading;
 
   return (
     <Container>
+      <Helmet>
+        <title>
+          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+        </title>
+      </Helmet>
       <Header>
+        <BackButton onClick={handleGoBack}>
+          <IoChevronBack />
+        </BackButton>
         <Title>
           {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
         </Title>
@@ -93,8 +108,8 @@ function Coin() {
               <span>${infoData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
-              <span>Open Source:</span>
-              <span>{infoData?.open_source ? "Yes" : "No"}</span>
+              <span>Price:</span>
+              <span>{tickersData?.quotes.USD.price}</span>
             </OverviewItem>
           </Overview>
           <Description>{infoData?.description}</Description>
@@ -124,6 +139,7 @@ function Coin() {
           </Tabs>
         </>
       )}
+      <Outlet context={{ coinId }} />
     </Container>
   );
 }
@@ -135,10 +151,30 @@ const Container = styled.div`
 `;
 
 const Header = styled.header`
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 10vh;
+`;
+
+const BackButton = styled.button`
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 4rem;
+  height: 4rem;
+  border: none;
+  border-radius: 10px;
+  background-color: transparent;
+  font-size: 2rem;
+  color: ${(props) => props.theme.textColor};
+  transform: translateY(-40%);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  svg {
+    vertical-align: text-bottom;
+  }
 `;
 
 const Title = styled.h1`
@@ -152,7 +188,7 @@ const Overview = styled.div`
   justify-content: space-between;
   padding: 10px 20px;
   border-radius: 10px;
-  background-color: rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
 `;
 
 const OverviewItem = styled.div`
@@ -182,7 +218,7 @@ const Tabs = styled.div`
 const Tab = styled(NavLink)`
   padding: 7px 0px;
   border-radius: 10px;
-  background-color: rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
   font-size: 1rem;
   font-weight: 400;
   color: ${(props) => props.theme.textColor};

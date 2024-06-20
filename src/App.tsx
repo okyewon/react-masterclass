@@ -1,12 +1,15 @@
 import { createGlobalStyle } from "styled-components";
 import Router from "./Router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { HelmetProvider } from "react-helmet-async";
 
 function App() {
   return (
     <>
       <GlobalStyle />
-      <Router />
+      <HelmetProvider>
+        <Router />
+      </HelmetProvider>
       {import.meta.env.MODE === "development" && (
         <ReactQueryDevtools initialIsOpen={true} />
       )}
