@@ -148,6 +148,7 @@ const Container = styled.div`
   max-width: 480px;
   margin: 0 auto;
   padding: 0 10px;
+  color: ${(props) => props.theme.textColor};
 `;
 
 const Header = styled.header`
@@ -170,7 +171,7 @@ const BackButton = styled.button`
   font-size: 2rem;
   color: ${(props) => props.theme.textColor};
   transform: translateY(-40%);
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+  box-shadow: ${(props) => props.theme.boxShadow};
   cursor: pointer;
   svg {
     vertical-align: text-bottom;
@@ -188,7 +189,7 @@ const Overview = styled.div`
   justify-content: space-between;
   padding: 10px 20px;
   border-radius: 10px;
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+  box-shadow: ${(props) => props.theme.boxShadow};
 `;
 
 const OverviewItem = styled.div`
@@ -218,7 +219,7 @@ const Tabs = styled.div`
 const Tab = styled(NavLink)`
   padding: 7px 0px;
   border-radius: 10px;
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+  box-shadow: ${(props) => props.theme.boxShadow};
   font-size: 1rem;
   font-weight: 400;
   color: ${(props) => props.theme.textColor};
