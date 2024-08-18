@@ -62,10 +62,8 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
   }
   body {
-    background-color: ${(props) => props.theme.bgColor};
     font-family: 'Source Sans 3', sans-serif;
     line-height: 1.2;
-    color: ${(props) => props.theme.textColor};
   }
   a {
     text-decoration: none;
