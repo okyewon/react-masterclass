@@ -1,41 +1,45 @@
 import { useForm } from "react-hook-form";
+import { atom, useRecoilState } from "recoil";
 
-interface FormValues {
+const toDoState = atom<IToDo[]>({
+  key: "toDo",
+  default: [],
+});
+
+interface IForm {
   toDo: string;
-  email: string;
+}
+
+interface IToDo {
+  text: string;
+  id: number;
+  category: "TO_DO" | "DOING" | "DONE";
 }
 
 function TodoList() {
-  /*  register에서 받은 문자열을 key값으로 watch에서 각 input value를 관찰
-   handleSumit: submit할 때, valid / unValid 구분해서 함수 실행 
-   const { register, watch, handleSubmit } = useForm(); */
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormValues>();
-  const onValid = (data: any) => {};
+  const [toDos, setTodos] = useRecoilState(toDoState);
+  const { register, handleSubmit, setValue } = useForm<IForm>();
+  const handleValid = ({ toDo }: IForm) => {
+    setTodos((oldToDos) => [
+      { text: toDo, id: Date.now(), category: "TO_DO" },
+      ...oldToDos,
+    ]);
+    setValue("toDo", "");
+  };
 
   return (
     <div>
-      <form onSubmit={handleSubmit(onValid)}>
-        <input
-          {...register("toDo", { required: true, minLength: 10 })}
-          placeholder="Write a to do"
-        />
-        <input
-          {...register("email", {
-            required: "Email is required",
-            pattern: {
-              value: /^[A-Za-z0-9._%+-]+@naver.com$/,
-              message: "Only naver.com emails allowed.",
-            },
-          })}
-          placeholder="Write a to do"
-        />
-        <span>{errors.email?.message}</span>
+      <h1>To Dos</h1>
+      <hr />
+      <form onSubmit={handleSubmit(handleValid)}>
+        <input {...register("toDo", { required: "Write a to do" })} />
         <button>Add</button>
       </form>
+      <ul>
+        {toDos.map((toDo) => (
+          <li key={toDo.id}>{toDo.text}</li>
+        ))}
+      </ul>
     </div>
   );
 }
