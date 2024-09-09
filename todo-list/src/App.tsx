@@ -1,34 +1,70 @@
-import { useRecoilState, useRecoilValue } from "recoil";
-import { createGlobalStyle } from "styled-components";
-import { hourSelector, minutesState } from "./atoms";
+import styled, { createGlobalStyle } from "styled-components";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+
+const Wrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 480px;
+  width: 100%;
+  height: 100vh;
+  margin: 0 auto;
+`;
+
+const Boards = styled.div`
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(1, 1fr);
+`;
+
+const Board = styled.div`
+  padding: 30px 10px 20px 10px;
+  background-color: ${(props) => props.theme.boardColor};
+  border-radius: 5px;
+  min-height: 200px;
+`;
+
+const Card = styled.div`
+  margin-bottom: 5px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: ${(props) => props.theme.cardColor};
+`;
+
+const toDos = ["a", "b", "c", "d", "e", "f"];
 
 function App() {
-  const [minutes, setMinutes] = useRecoilState(minutesState);
-  const [hours, setHours] = useRecoilState(hourSelector);
-  const onMinutesChange = (event: React.FormEvent<HTMLInputElement>) => {
-    setMinutes(+event.currentTarget.value);
-  };
-  const onHoursChange = (event: React.FormEvent<HTMLInputElement>) => {
-    setHours(+event.currentTarget.value);
-  };
+  const onDragEnd = () => {};
 
   return (
     <>
       <GlobalStyle />
-      <div>
-        <input
-          value={minutes}
-          onChange={onMinutesChange}
-          type="number"
-          placeholder="Minutes"
-        />
-        <input
-          value={hours}
-          onChange={onHoursChange}
-          type="number"
-          placeholder="Hours"
-        />
-      </div>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Wrapper>
+          <Boards>
+            <Droppable droppableId="one">
+              {(magic) => (
+                <Board ref={magic.innerRef} {...magic.droppableProps}>
+                  {toDos.map((toDo, idx) => (
+                    <Draggable draggableId={toDo} index={idx}>
+                      {(magic) => (
+                        <Card
+                          ref={magic.innerRef}
+                          {...magic.dragHandleProps}
+                          {...magic.draggableProps}
+                        >
+                          {toDo}
+                        </Card>
+                      )}
+                    </Draggable>
+                  ))}
+                  {magic.placeholder}
+                </Board>
+              )}
+            </Droppable>
+          </Boards>
+        </Wrapper>
+      </DragDropContext>
     </>
   );
 }
@@ -65,6 +101,8 @@ const GlobalStyle = createGlobalStyle`
   }
   body {
     line-height: 1;
+    background-color: ${(props) => props.theme.bgColor};
+    color: black;
   }
   menu, ol, ul {
     list-style: none;
